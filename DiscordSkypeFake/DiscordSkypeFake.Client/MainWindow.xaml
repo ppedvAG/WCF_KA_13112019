@@ -43,6 +43,6 @@
             <Button Click="SendText" Name="sendTextBtn" Grid.Column="1">Senden</Button>
             <Button Click="SendImage" Name="sendImageBtn" Grid.Column="2">Bild...</Button>
         </Grid>
-        <ListBox Name="chatLb" />
+        <ListBox  ScrollViewer.CanContentScroll="False" Name="chatLb" />
     </DockPanel>
 </adonisControls:AdonisWindow>

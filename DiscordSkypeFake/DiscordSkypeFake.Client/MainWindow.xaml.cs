@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
+using System.ServiceModel.Security;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -70,13 +73,28 @@ namespace DiscordSkypeFake.Client
             image.Stretch = Stretch.None;
             image.EndInit();
             //vb.Child = image;
-            chatLb.Items.Add(image);
+            //chatLb.Items.Add(image);
+
+            ms.Position = 0;
+            var hash = SHA1.Create().ComputeHash(ms);
+
+            var target = chatLb.Items.OfType<WrapPanel>().FirstOrDefault(x => x.Tag != null && x.Tag.Equals(Convert.ToBase64String(hash)));
+            target.Children.Add(image);
+            target.Tag = null;
 
         }
 
         public void ShowText(string text, DateTime time, string user)
         {
-            chatLb.Items.Add($"[{time:t}] {user}: {text}");
+            if (text.StartsWith("IMG"))
+            {
+                var wrap = new WrapPanel();
+                wrap.Children.Add(new TextBlock() { Text = $"[{time:t}] {user}: {text} wird geladen" });
+                wrap.Tag = text.Substring(4);
+                chatLb.Items.Add(wrap);
+            }
+            else
+                chatLb.Items.Add($"[{time:t}] {user}: {text}");
         }
 
         public void ShowUsers(IEnumerable<string> users)
@@ -87,10 +105,22 @@ namespace DiscordSkypeFake.Client
         DuplexChannelFactory<IServer> cf = null;
         private void Login(object sender, RoutedEventArgs e)
         {
+            var http = new WSDualHttpBinding();
+            http.Security.Mode = WSDualHttpSecurityMode.Message;
+            http.Security.Message.ClientCredentialType = MessageCredentialType.Certificate;
+            http.MaxReceivedMessageSize = int.MaxValue;
+
 
             var tcp = new NetTcpBinding();
             tcp.MaxReceivedMessageSize = int.MaxValue;
+            tcp.Security.Mode = SecurityMode.None;
             cf = new DuplexChannelFactory<IServer>(this, tcp, new EndpointAddress("net.tcp://localhost:1"));
+            //cf = new DuplexChannelFactory<IServer>(this, http, new EndpointAddress(new Uri("http://localhost.fiddler:2"), UpnEndpointIdentity.CreateDnsIdentity("SignedByRootCA")));
+            //cf.Credentials.ClientCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.My, X509FindType.FindByThumbprint, "69ff17bd74b7e71da25dd06e2952276a4b956a36");
+            //cf.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = X509CertificateValidationMode.None;
+
+            //            cf.Credentials.Windows.ClientCredential.UserName = "Fred";
+            //            cf.Credentials.Windows.ClientCredential.Password = "123456";
             server = cf.CreateChannel();
             var myTask = Task.Run(() =>
              {
