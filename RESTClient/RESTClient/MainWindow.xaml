@@ -1,0 +1,27 @@
+﻿<Window x:Class="RESTClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RESTClient"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="600">
+    <DockPanel>
+        <WrapPanel DockPanel.Dock="Top" Margin="6">
+            <TextBox Width="200" Name="tb1"/>
+            <Button Click="Such">Suchen</Button>
+        </WrapPanel>
+        <TabControl>
+            <TabControl.Items>
+
+                <TabItem Header="Grid">
+                    <DataGrid Name="myGrid"/>
+                </TabItem>
+                <TabItem Header="json">
+                    <TextBox VerticalScrollBarVisibility="Auto"
+                             Name="tbjson" />
+                </TabItem>
+            </TabControl.Items>
+        </TabControl>
+    </DockPanel>
+</Window>
